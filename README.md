@@ -1,25 +1,13 @@
 # Braille
-## Brainstorming
-- [OK] direct rendering bytes to configuration
-- [OK] configure braille to LED pins left to right row, top to bottom
-- documentation of the code
-- text rendering with delay
-- simple visual design registration
-- design registration validation
-- only registered characters are valid
-- uppercase and lowercase characters
-- overview registered glyphs
-> printable chars to start with
-   - [A; Z]
-   - [a; z]
-   - [0; 9] with leading number indicator (multiple characters)
-   - punctuation (multiple characters)
-> rules to show various things
-   - numbers + leading number character
-- cleanup implementation into single configuration struct and pass it around
-- add more characters
+## Features
+- Single braille character rendering to 2 (wide) by 3 (high) LED matrix
+- Simple configuration of LEDs to Arduino pins
+- Simple configuration of braille glyph character design
+- Overview of registered braille glyphs through ASCII
 
-## Library
-
-## Q & A
-- How to handle un-supported or un-registered characters ?
+## Todo
+- Add other printable braille character glyphs
+- Implement braille numbers and punctuation as per specification
+  [Braille Specification](https://www.pharmabraille.com/pharmaceutical-braille/the-braille-alphabet/)
+- Handle uppercase and lowercase characters the same ?
+- Cleanup implementation into single struct to pass around
