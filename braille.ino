@@ -121,6 +121,17 @@ bool render_braille_character(char character)
   }
 }
 
+void render_braille_text(const char * const p_text, unsigned long int delay_in_millis)
+{
+  if (NULL == p_text) return;
+
+  for (const char * p_char = p_text; *p_char != '\0'; ++p_char)
+  {
+    render_braille_character(*p_char);
+    delay(delay_in_millis);
+  }
+}
+
 // Entry point
 void setup() {
   // Initialize Serial Monitor
@@ -188,11 +199,6 @@ void setup() {
 
 // Loop
 void loop() {
-  // Rendering braille per-character
-  render_braille_character('A');
-  delay(1000);
-  render_braille_character('B');
-  delay(1000);
-  render_braille_character('C');
-  delay(1000);
+  // Render braille text
+  render_braille_text("ABCDE", 500);
 }

@@ -17,6 +17,7 @@
 > rules to show various things
    - numbers + leading number character
 - cleanup implementation into single configuration struct and pass it around
+- add more characters
 
 ## Library
 
