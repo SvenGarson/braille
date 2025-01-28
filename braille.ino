@@ -15,6 +15,9 @@ const char * const P_DESIGN_BRAILLE_C = "XX"
                                         ".."
                                         "..";
 
+// Rendering
+const char * const P_DESIGN_BRAILLE_MARKER = 'X';
+
 // Braille design validation
 const int BRAILLE_DESIGN_WIDTH = 2;
 const int BRAILLE_DESIGN_HEIGHT = 3;
@@ -56,12 +59,30 @@ bool braille_design_in_valid(const char * p_braille_design)
 
 bool register_braille_glyph_with_design(char character, const char * p_braille_design)
 {
-  if (
-    braille_character_not_supported(character) ||
-    braille_design_in_valid(p_braille_design)
-  ) return false;
-
   const int ASCII_CODE = (int)character;
+
+  // Character supported ?
+  if (braille_character_not_supported(character))
+  {
+    Serial.print("\n\nFailed to register character with ASCII code: [");
+    Serial.print(ASCII_CODE);
+    Serial.print("] because it's not supported !");
+
+    return false;
+  }
+
+  // Glyph design valid ?
+  if (braille_design_in_valid(p_braille_design))
+  {
+    Serial.print("\n\nFailed to register character with ASCII code: [");
+    Serial.print(ASCII_CODE);
+    Serial.print("] because the design [");
+    Serial.print(p_braille_design);
+    Serial.print("] is invalid !");
+
+    return false;
+  }
+
   struct braille_glyph_s * p_glyph = braille_glyphs + ASCII_CODE;
   p_glyph->registered = true;
   p_glyph->p_design = p_braille_design;
@@ -77,21 +98,26 @@ enum braille_dot_e {
   BRAILLE_DOT_4,
   BRAILLE_DOT_5,
   BRAILLE_DOT_6,
-  BRAILLE_DOT_7,
-  BRAILLE_DOT_8,
   BRAILLE_DOT_COUNT
 };
 
 // Specify braille dot type to digital arduino pin
 int braille_dot_to_arduino_pin[BRAILLE_DOT_COUNT];
 
-// Library: Direct rendering
-void render_braille_uint8(uint8_t braille_char)
+// Library: Text rendering
+bool render_braille_character(char character)
 {
-  for (int i_braille_dot = 0; i_braille_dot < BRAILLE_DOT_COUNT; ++i_braille_dot)
+  // Registered ?
+  const int ASCII_CODE = (int)character;
+  const struct braille_glyph_s * P_GLYPH = braille_glyphs + ASCII_CODE;
+  if (!P_GLYPH->registered) return false;
+
+  // Assume that glyph design is valid since registration
+  for (int i_glyph_char = 0; i_glyph_char < BRAILLE_DESIGN_LENGTH; ++i_glyph_char)
   {
-    const int PIN = braille_dot_to_arduino_pin[BRAILLE_DOT_8 - i_braille_dot];
-    digitalWrite(PIN, bitRead(braille_char, i_braille_dot) ? HIGH : LOW);
+    const int DOT_PIN = braille_dot_to_arduino_pin[i_glyph_char];
+    const bool DOT_ON = (P_GLYPH->p_design[i_glyph_char] == P_DESIGN_BRAILLE_MARKER) ? true : false;
+    digitalWrite(DOT_PIN, DOT_ON ? HIGH : LOW);
   }
 }
 
@@ -102,13 +128,11 @@ void setup() {
 
   // Configure braille dots to arduino pin configuration
   braille_dot_to_arduino_pin[BRAILLE_DOT_1] = 6;
-  braille_dot_to_arduino_pin[BRAILLE_DOT_2] = 2;
-  braille_dot_to_arduino_pin[BRAILLE_DOT_3] = 9;
-  braille_dot_to_arduino_pin[BRAILLE_DOT_4] = 3;
-  braille_dot_to_arduino_pin[BRAILLE_DOT_5] = 8;
-  braille_dot_to_arduino_pin[BRAILLE_DOT_6] = 7;
-  braille_dot_to_arduino_pin[BRAILLE_DOT_7] = 4;
-  braille_dot_to_arduino_pin[BRAILLE_DOT_8] = 5;
+  braille_dot_to_arduino_pin[BRAILLE_DOT_2] = 8;
+  braille_dot_to_arduino_pin[BRAILLE_DOT_3] = 2;
+  braille_dot_to_arduino_pin[BRAILLE_DOT_4] = 7;
+  braille_dot_to_arduino_pin[BRAILLE_DOT_5] = 9;
+  braille_dot_to_arduino_pin[BRAILLE_DOT_6] = 4;
 
   // Configure arduino pin modes accordingly
   for (int i_braille_dot = 0; i_braille_dot < BRAILLE_DOT_COUNT; ++i_braille_dot)
@@ -164,30 +188,11 @@ void setup() {
 
 // Loop
 void loop() {
-  // Examples: Direct rendering into configuration
-  /*
-      Binary: 1100 1100
-      Matrix:
-
-          1  1
-          0  0
-          1  1
-          0  0
-  */
-  render_braille_uint8(0xCC); // 1100 1100
+  // Rendering braille per-character
+  render_braille_character('A');
   delay(1000);
-
-  /*
-      Binary: 0011 0011
-      Matrix:
-
-          1  1
-          0  0
-          1  1
-          0  0
-  */
-  render_braille_uint8(0x33); // 0011 0011
+  render_braille_character('B');
   delay(1000);
-
-  // Examples: Text . . .
+  render_braille_character('C');
+  delay(1000);
 }
